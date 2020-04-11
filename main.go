@@ -11,16 +11,19 @@ type fooHandler struct {
 func (f *fooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "hello foo")
 }
-
+func barHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Hello bar")
+}
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Hello World")
 	})
-	http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Hello bar")
-	})
+	mux.HandleFunc("/bar", barHandler)
 
-	http.Handle("/foo", &fooHandler{})
+	mux.Handle("/foo", &fooHandler{})
 
-	http.ListenAndServe(":3000", nil)
+	http.ListenAndServe(":3000", mux)
+
 }
