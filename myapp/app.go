@@ -16,6 +16,9 @@ type User struct {
 
 type fooHandler struct {
 }
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Hello World")
+}
 
 func (f *fooHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	user := new(User)
@@ -43,9 +46,7 @@ func barHandler(w http.ResponseWriter, r *http.Request) {
 func NewHttpHandler() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Hello World")
-	})
+	mux.HandleFunc("/",indexHandler)
 	mux.HandleFunc("/bar", barHandler)
 
 	mux.Handle("/foo", &fooHandler{})

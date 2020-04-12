@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-with-web/myapp"
+	"github.com/jinhokong/go-with-web/myapp"
 	"net/http"
 )
 
