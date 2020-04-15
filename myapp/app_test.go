@@ -49,3 +49,14 @@ func TestBarPathHandler_withOutName(t *testing.T) {
 	data,_:=ioutil.ReadAll(res.Body)
 	assert.Equal("Hello jinho!",string(data))
 }
+func TestBarPathHandler_withOutJSON(t *testing.T) {
+	assert := assert.New(t)
+
+	res:=httptest.NewRecorder()
+	req:=httptest.NewRequest("GET","/foo", nil)
+
+	mux:=NewHttpHandler()
+	mux.ServeHTTP(res,req)
+
+	assert.Equal(http.StatusBadRequest,res.Code)
+}
