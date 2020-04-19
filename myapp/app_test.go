@@ -1,84 +1,56 @@
+
 package myapp
 
 import (
-	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestIndexPathHandler(t *testing.T) {
+func TestIndex(t *testing.T) {
 	assert := assert.New(t)
 
-	res:=httptest.NewRecorder()
-	req:=httptest.NewRequest("GET","/", nil)
+	ts := httptest.NewServer(NewHandler())
+	defer ts.Close()
 
-	mux:=NewHttpHandler()
-	mux.ServeHTTP(res,req)
-
-	assert.Equal(http.StatusOK,res.Code)
-	data,_:=ioutil.ReadAll(res.Body)
-	assert.Equal("Hello World",string(data))
+	resp, err := http.Get(ts.URL)
+	assert.NoError(err)
+	assert.Equal(http.StatusOK, resp.StatusCode)
+	data, _ := ioutil.ReadAll(resp.Body)
+	assert.Equal("Hello World", string(data))
 }
 
-func TestBarPathHandler(t *testing.T) {
+func TestUsers(t *testing.T) {
 	assert := assert.New(t)
 
-	res:=httptest.NewRecorder()
-	req:=httptest.NewRequest("GET","/bar", nil)
+	ts := httptest.NewServer(NewHandler())
+	defer ts.Close()
 
-	mux:=NewHttpHandler()
-	mux.ServeHTTP(res,req)
-
-	assert.Equal(http.StatusOK,res.Code)
-	data,_:=ioutil.ReadAll(res.Body)
-	assert.Equal("Hello world!",string(data))
+	resp, err := http.Get(ts.URL + "/users")
+	assert.NoError(err)
+	assert.Equal(http.StatusOK, resp.StatusCode)
+	data, _ := ioutil.ReadAll(resp.Body)
+	assert.Contains(string(data), "Get UserInfo")
 }
 
-func TestBarPathHandler_withOutName(t *testing.T) {
+func TestGetUserInfo(t *testing.T) {
 	assert := assert.New(t)
 
-	res:=httptest.NewRecorder()
-	req:=httptest.NewRequest("GET","/bar?name=jinho", nil)
+	ts := httptest.NewServer(NewHandler())
+	defer ts.Close()
 
-	mux:=NewHttpHandler()
-	mux.ServeHTTP(res,req)
+	resp, err := http.Get(ts.URL + "/users/89")
+	assert.NoError(err)
+	assert.Equal(http.StatusOK, resp.StatusCode)
+	data, _ := ioutil.ReadAll(resp.Body)
+	assert.Contains(string(data), "User Id:89")
 
-	assert.Equal(http.StatusOK,res.Code)
-	data,_:=ioutil.ReadAll(res.Body)
-	assert.Equal("Hello jinho!",string(data))
-}
-
-func TestBarPathHandler_withOutJSON(t *testing.T) {
-	assert := assert.New(t)
-
-	res:=httptest.NewRecorder()
-	req:=httptest.NewRequest("GET","/foo", nil)
-
-	mux:=NewHttpHandler()
-	mux.ServeHTTP(res,req)
-
-	assert.Equal(http.StatusBadRequest,res.Code)
-}
-
-func TestBarPathHandler_withJSON(t *testing.T) {
-	assert := assert.New(t)
-
-	res:=httptest.NewRecorder()
-	req:=httptest.NewRequest("GET","/foo", strings.NewReader(`{"first_name":"jinho", "last_name":"hong","email":"tpdleps@gmail.com"}`))
-
-
-	mux:=NewHttpHandler()
-	mux.ServeHTTP(res,req)
-
-	assert.Equal(http.StatusCreated,res.Code)
-
-	user :=new(User)
-	err:=json.NewDecoder(res.Body).Decode(user)
-	assert.Nil(err)
-	assert.Equal("jinho",user.FirstName)
-	assert.Equal("hong",user.LastName)
+	resp, err = http.Get(ts.URL + "/users/56")
+	assert.NoError(err)
+	assert.Equal(http.StatusOK, resp.StatusCode)
+	data, _ = ioutil.ReadAll(resp.Body)
+	assert.Contains(string(data), "User Id:56")
 }
